@@ -1,0 +1,88 @@
+---
+- name: Configurar Servidor de Aplicação Java
+  hosts: app01
+
+  user: vagrant
+  become: yes     #Para executar como root
+
+  vars:
+    - dbhost: "db01"
+    - dbname: "notes"
+    - dbusername: "notesapp"
+    - dbpassword: "devops"
+
+  tasks:
+    - name: Configurar hosts lab ansible
+      lineinfile:
+        dest: /etc/hosts
+        state: present
+        line: "{{item}}" #item é o valor de cada item do array
+      with_items:         #Iteração sobre o array
+        - 192.168.1.2 control-node
+        - 192.168.1.3 app01
+        - 192.168.1.4 bd01
+    - name: Adicionar usuário da aplicação
+      user:
+        name: app
+        comment: "Usuário da aplicação"
+        uid: 500 #O usuário deve ter um UID diferente do do root
+    #- name: Instalação do Maven
+     # yum:
+      #  name: maven
+       # state: latest
+    #- name: Instalação do Java 8
+     # yum:
+      #  name: java-1.8.0-openjdk
+       # state: latest
+    - name: Instalação do Java 11
+      yum:
+        name: java-11-openjdk
+        state: latest    
+    - name: Criação do diretório de aplicação
+      file:
+        path: /opt/notes
+        state: directory
+        owner: app
+        group: app
+    - name: Instalação do Git Client
+      yum:
+        name: "git"
+        state: latest    
+    - name: Clone do repositório notes
+      git:
+        repo: "https://github.com/callicoder/spring-boot-mysql-rest-api-tutorial.git"        
+        dest: /opt/notes
+        clone: yes #Clona o repositório
+        force: yes #Força a criação do diretório
+    - name: Criar arquivo de propriedades para camada de banco de dados
+      template:
+        src:  application.properties
+        dest: /opt/notes/src/resources/application.properties      
+    - name: Gerar pacote da aplicaçao    
+      command: mvn -f /opt/notes/pom.xml package
+      become_user: app
+    - name: Registrar versão do pacote
+      shell:
+        cmd: mvn -o -q -Dexec.executable=echo -Dexec.args='${project.version}' exec:java   
+        chdir: /opt/notes/
+        register: app_version    
+    - name: Configurar servidor do Systemd
+      template:
+        src: etc/systemd/system/notes.service
+        dest: /etc/systemd/system/notes.service
+        notify: reload daemon
+    - name: Iniciar serviço notes
+      service:
+        name: notes
+        state: restarted
+  roles:
+    - configuracao-default-so
+  handlers:
+    - name: reload app
+      systemd:
+        state: restarted
+        daemon_reload: yes
+        name: notes
+    - name: reload daemon
+      systemd:
+        daemon_exec: yes        
