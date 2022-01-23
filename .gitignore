@@ -1,2 +1,10 @@
+# Removendo arquivos desnecessários
 .DS_Store
 .vagrant
+.log
+
+# Removendo arquivos sensíveis
+create*.sh
+
+# Removendo executáveis
+.jar
