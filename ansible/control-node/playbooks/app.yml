@@ -23,20 +23,20 @@
         state: latest
     - name: Criação do diretório de apache-maven
       file:
-        path: /opt/maven2
+        path: /opt/maven
         state: directory
         owner: root
         group: root   
     - name: Instalação do Maven
       unarchive:
         src: /vagrant/playbooks/templates/apache-maven-3.8.4-bin.tar.gz
-        dest: /opt/maven2
+        dest: /opt/maven
         owner: root
         group: root
-    - name: Definindo variaveis permanentes
-      shell:
-        cmd: echo "export MAVEN_HOME=/opt/maven export PATH=$PATH:$MAVEN_HOME/bin" >> /etc/profile.d/maven2.sh && source /etc/profile.d/maven2.sh        
-        executable: /bin/bash
+    #- name: Definindo variaveis permanentes
+     # shell:
+      #  cmd: echo "export MAVEN_HOME=/opt/maven export PATH=\$PATH:\$MAVEN_HOME/bin" >> /etc/profile.d/maven2.sh && source /etc/profile.d/maven2.sh        
+       # executable: /bin/sh
     - name: Criação do diretório de app
       file:
         path: /opt/notes
@@ -68,11 +68,11 @@
     - name: Gerar pacote da aplicação
       become: yes
       shell:       
-        cmd: /opt/maven/bin/mvn -f /opt/notes/pom.xml package 
+        cmd: /opt/maven/apache-maven-3.8.4/bin/mvn -f /opt/notes/pom.xml package 
         executable: /bin/sh      
     - name: Registrar versao atual do pacote
       shell:
-       cmd: /opt/maven/bin/mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -v '\['       
+       cmd: /opt/maven/apache-maven-3.8.4/bin/mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -v '\['       
        chdir: /opt/notes/
       register: app_version
     - name: Configurar serviço do Systemd
