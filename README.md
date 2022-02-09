@@ -1,7 +1,7 @@
 ## DevOps - HandsOn
 
 Este repositório consiste em um lab DevOps, no qual busco aprimorar
-meus conhecimentos nas principais Ferramentas de Mercado.
+meus conhecimentos nas principais ferramentas de DevOps.
 
 ### RoadMap
 
@@ -13,3 +13,7 @@ meus conhecimentos nas principais Ferramentas de Mercado.
 * Containers - Docker, Docker-Composer,Docker Swarm
 * QA - SonarQube
 
+### Observações
+
+O objetivo deste repositório é voltado nas ferramentas DevOps,
+por este motivo utilizei aplicações já desenvolvidas.
